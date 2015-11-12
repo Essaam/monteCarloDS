@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+	<title>
+		Monte Carlo Direct Sampling
+	</title>
+	<style>
+		#mycanvas {
+			border: 1px solid black;
+		}
+		
+		#runtime:valid {
+			background-color: lightGreen;
+		}
+		
+		#runtime:invalid {
+			background-color: pink;
+		}
+		
+		#rangeinputform {
+			padding-bottom: 20px;
+		}
+		
+		body {
+			width: 600px;
+		}
+		
+		#pivalue {
+			font-style: italic;
+			font-weight: bold;
+		}
+	</style>
+	<script>
+		var mcanvas, ctx;
+		function init() {
+			mcanvas = document.querySelector("#mycanvas");
+		    ctx = mcanvas.getContext('2d');			
+			drawfield();			
+		}
+		function drawfield() {
+			ctx.beginPath();
+			ctx.arc(200,200,200,0,2*Math.PI);
+			ctx.lineWidth = 1;
+			ctx.stroke();
+			ctx.fillStyle = "#D0EBFF";
+			ctx.fill();
+		}
+		function drawpoint(x, y, hitbool) {
+			ctx.beginPath();
+			ctx.arc(x, y, 2, 0, 2*Math.PI);
+			ctx.lineWidth = 0.5;
+			ctx.stroke();
+			if(hitbool) {
+			    ctx.fillStyle = "Green";	
+			} 
+			if(!hitbool) {
+				ctx.fillStyle = "Red";
+			}
+			
+			ctx.fill();
+		}
+		function mcds(runtime) {
+			var halfsquaredim = 200;
+			var tmax = 10;
+			var totalrun = tmax*runtime;
+			var hit = 0;
+			var drawhit = false;
+			for(i=0;i<totalrun;i++) {
+				var x = Math.random() * 2 - 1;
+				var y = Math.random() * 2 - 1;
+				drawhit = false;
+				var dist = Math.pow(x,2) + Math.pow(y,2);
+				if(dist <= 1) {
+					hit++;
+					drawhit = true;
+				}
+				var xdraw = Math.round(halfsquaredim * (1 + x));
+				var ydraw = Math.round(halfsquaredim * (1 + y));
+				drawpoint(xdraw, ydraw, drawhit);
+				console.log("pi: "+ (4*hit/i), "trial: "+i, "hit: "+hit);
+			}
+		    printPiVal(hit, i);
+		}
+		function printValue(sliderId, outputId) {
+				var oid = document.getElementById(outputId);
+				var slid = document.getElementById(sliderId);
+				oid.value = slid.value;
+			}
+			function runsim(sliderId) {
+				mcanvas = document.querySelector("#mycanvas");
+		        ctx = mcanvas.getContext('2d');
+				ctx.clearRect(0,0,400,400);
+				drawfield();	
+				var runtime = document.getElementById(sliderId).value;
+				mcds(runtime);
+			}
+			function printPiVal(numhits, numtrials) {
+				document.getElementById('pivalue').value = 4.0 * numhits/numtrials;
+			}
+	</script>
+</head>
+
+<body onload="init(); printValue('runtimeslider', 'runtimevalue');">
+	<header>
+		<h1>
+		Monte Carlo direct sampling
+    </h1>
+	</header>
+	<section>
+		<h5>
+		In Monaco, at Monte Carlo beach, children mark a square on the sands and a tangent circle inside that square to play a game. The game is to stand outside the square and throw pebbles into the square.
+		The pebbles that lands inside the circle count as hit. With this simple game we can estimate the value for number PI by calculating the ratio of hits over total trials, i.e. "PI = 4*(hits/trials)".</h5>
+		<h6>
+		[ref. & if you want to know more: <a href="https://www.coursetalk.com/providers/coursera/courses/statistical-mechanics-algorithms-and-computations">Statistical Mechanics: Algorithms and Computations</a>]	
+		</h6>
+		<p>
+			Here, you can simulate the game by selecting the number of games to play. For each pebble that lands inside the circle a
+			green circle marks its location. The other pebbles that lands outside the circle, and inside the square, are marked with
+			red circles. The value for PI is estimated from the total number of trials in your simulation.
+			<form id="rangeinputform">
+				<p>
+					<label for="runtimeslider">Select the number of games to play. In each game 10 pebbles are thrown into the square, i.e., "total trials = 10 * number
+						of games".</label>
+				</p>
+				<p>
+					Click "Start" to run the simulation.
+				</p>
+				<input type="range" id="runtimeslider" value="100" min="1" max="10000" step="1" oninput="printValue('runtimeslider', 'runtimevalue');"
+				/>
+				<output id="runtimevalue"></output>
+				<input type="button" id="runstart" value="Start" onclick="runsim('runtimeslider')" />
+				<p>
+					<label for="pivalue">Estimated value for PI:</label>
+					<output id="pivalue"></output>
+				</p>
+
+			</form>
+			<canvas id="mycanvas" width="400" height="400">
+				Your browser does not support "canvas".
+			</canvas>
+	</section>
+
+</body>
+
+</html>
